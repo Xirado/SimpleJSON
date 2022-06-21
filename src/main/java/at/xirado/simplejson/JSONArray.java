@@ -28,15 +28,13 @@ import java.util.stream.Stream;
  *
  * <p>This class is Thread-Safe
  */
-public class JSONArray implements Iterable<Object>, SerializableArray
-{
+public class JSONArray implements Iterable<Object>, SerializableArray {
     private static final Logger log = LoggerFactory.getLogger(JSONObject.class);
     private static final ObjectMapper mapper;
     private static final SimpleModule module;
     private static final CollectionType listType;
 
-    static
-    {
+    static {
         mapper = new ObjectMapper();
         module = new SimpleModule();
         module.addAbstractTypeMapping(Map.class, HashMap.class);
@@ -47,21 +45,26 @@ public class JSONArray implements Iterable<Object>, SerializableArray
 
     protected final List<Object> data;
 
-    protected JSONArray(List<Object> data)
-    {
+    protected JSONArray(List<Object> data) {
         this.data = Collections.synchronizedList(data);
+    }
+
+    protected JSONArray(String json) {
+        try {
+            this.data = mapper.readValue(json, listType);
+        } catch (IOException e) {
+            throw new ParsingException(e);
+        }
     }
 
     /**
      * Creates a new empty JSONArray, ready to be populated with values.
      *
      * @return An empty JSONArray instance
-     *
-     * @see    #add(Object)
+     * @see #add(Object)
      */
     @NotNull
-    public static JSONArray empty()
-    {
+    public static JSONArray empty() {
         return new JSONArray(new ArrayList<>());
     }
 
@@ -69,37 +72,26 @@ public class JSONArray implements Iterable<Object>, SerializableArray
      * Creates a new JSONArray and populates it with the contents
      * of the provided collection.
      *
-     * @param  col
-     *         The {@link java.util.Collection}
-     *
+     * @param col The {@link java.util.Collection}
      * @return A new JSONArray populated with the contents of the collection
      */
     @NotNull
-    public static JSONArray fromCollection(@NotNull Collection<?> col)
-    {
+    public static JSONArray fromCollection(@NotNull Collection<?> col) {
         return empty().addAll(col);
     }
 
     /**
      * Parses a JSON Array into a JSONArray instance.
      *
-     * @param  json
-     *         The correctly formatted JSON Array
-     *
-     * @throws ParsingException
-     *         If the provided JSON is incorrectly formatted
-     *
+     * @param json The correctly formatted JSON Array
      * @return A new JSONArray instance for the provided array
+     * @throws ParsingException If the provided JSON is incorrectly formatted
      */
     @NotNull
-    public static JSONArray fromJson(@NotNull String json)
-    {
-        try
-        {
+    public static JSONArray fromJson(@NotNull String json) {
+        try {
             return new JSONArray(mapper.readValue(json, listType));
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new ParsingException(e);
         }
     }
@@ -107,23 +99,15 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Parses a JSON Array into a JSONArray instance.
      *
-     * @param  json
-     *         The correctly formatted JSON Array
-     *
-     * @throws ParsingException
-     *         If the provided JSON is incorrectly formatted or an I/O error occurred
-     *
+     * @param json The correctly formatted JSON Array
      * @return A new JSONArray instance for the provided array
+     * @throws ParsingException If the provided JSON is incorrectly formatted or an I/O error occurred
      */
     @NotNull
-    public static JSONArray fromJson(@NotNull InputStream json)
-    {
-        try
-        {
+    public static JSONArray fromJson(@NotNull InputStream json) {
+        try {
             return new JSONArray(mapper.readValue(json, listType));
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new ParsingException(e);
         }
     }
@@ -131,23 +115,15 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Parses a JSON Array into a JSONArray instance.
      *
-     * @param  json
-     *         The correctly formatted JSON Array
-     *
-     * @throws ParsingException
-     *         If the provided JSON is incorrectly formatted or an I/O error occurred
-     *
+     * @param json The correctly formatted JSON Array
      * @return A new JSONArray instance for the provided array
+     * @throws ParsingException If the provided JSON is incorrectly formatted or an I/O error occurred
      */
     @NotNull
-    public static JSONArray fromJson(@NotNull Reader json)
-    {
-        try
-        {
+    public static JSONArray fromJson(@NotNull Reader json) {
+        try {
             return new JSONArray(mapper.readValue(json, listType));
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new ParsingException(e);
         }
     }
@@ -155,30 +131,22 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Whether the value at the specified index is null.
      *
-     * @param  index
-     *         The index to check
-     *
+     * @param index The index to check
      * @return True, if the value at the index is null
      */
-    public boolean isNull(int index)
-    {
+    public boolean isNull(int index) {
         return data.get(index) == null;
     }
 
     /**
      * Whether the value at the specified index is of the specified type.
      *
-     * @param  index
-     *         The index to check
-     * @param  type
-     *         The type to check
-     *
+     * @param index The index to check
+     * @param type  The type to check
      * @return True, if the type check is successful
-     *
-     * @see    DataType#isType(Object)
+     * @see DataType#isType(Object)
      */
-    public boolean isType(int index, @NotNull DataType type)
-    {
+    public boolean isType(int index, @NotNull DataType type) {
         return type.isType(data.get(index));
     }
 
@@ -187,8 +155,7 @@ public class JSONArray implements Iterable<Object>, SerializableArray
      *
      * @return The length of the array
      */
-    public int length()
-    {
+    public int length() {
         return data.size();
     }
 
@@ -197,33 +164,24 @@ public class JSONArray implements Iterable<Object>, SerializableArray
      *
      * @return True, if this array is empty
      */
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return data.isEmpty();
     }
 
     /**
      * Resolves the value at the specified index to a JSONObject
      *
-     * @param  index
-     *         The index to resolve
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type or missing
-     *
+     * @param index The index to resolve
      * @return The resolved JSONObject
+     * @throws ParsingException If the value is of the wrong type or missing
      */
     @NotNull
     @SuppressWarnings("unchecked")
-    public JSONObject getObject(int index)
-    {
+    public JSONObject getObject(int index) {
         Map<String, Object> child = null;
-        try
-        {
+        try {
             child = (Map<String, Object>) get(Map.class, index);
-        }
-        catch (ClassCastException ex)
-        {
+        } catch (ClassCastException ex) {
             log.error("Unable to extract child data", ex);
         }
         if (child == null)
@@ -234,25 +192,17 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to a JSONArray
      *
-     * @param  index
-     *         The index to resolve
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type or null
-     *
+     * @param index The index to resolve
      * @return The resolved JSONArray
+     * @throws ParsingException If the value is of the wrong type or null
      */
     @NotNull
     @SuppressWarnings("unchecked")
-    public JSONArray getArray(int index)
-    {
+    public JSONArray getArray(int index) {
         List<Object> child = null;
-        try
-        {
+        try {
             child = (List<Object>) get(List.class, index);
-        }
-        catch (ClassCastException ex)
-        {
+        } catch (ClassCastException ex) {
             log.error("Unable to extract child data", ex);
         }
         if (child == null)
@@ -263,17 +213,12 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to a String.
      *
-     * @param  index
-     *         The index to resolve
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type or null
-     *
+     * @param index The index to resolve
      * @return The resolved String
+     * @throws ParsingException If the value is of the wrong type or null
      */
     @NotNull
-    public String getString(int index)
-    {
+    public String getString(int index) {
         String value = get(String.class, index, UnaryOperator.identity(), String::valueOf);
         if (value == null)
             throw valueError(index, "String");
@@ -283,19 +228,13 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to a String.
      *
-     * @param  index
-     *         The index to resolve
-     * @param  defaultValue
-     *         Alternative value to use when the value associated with the index is null
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index        The index to resolve
+     * @param defaultValue Alternative value to use when the value associated with the index is null
      * @return The resolved String
+     * @throws ParsingException If the value is of the wrong type
      */
     @Contract("_, !null -> !null")
-    public String getString(int index, @Nullable String defaultValue)
-    {
+    public String getString(int index, @Nullable String defaultValue) {
         String value = get(String.class, index, UnaryOperator.identity(), String::valueOf);
         return value == null ? defaultValue : value;
     }
@@ -303,34 +242,23 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to a boolean.
      *
-     * @param  index
-     *         The index to resolve
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index The index to resolve
      * @return True, if the value is present and set to true. Otherwise false.
+     * @throws ParsingException If the value is of the wrong type
      */
-    public boolean getBoolean(int index)
-    {
+    public boolean getBoolean(int index) {
         return getBoolean(index, false);
     }
 
     /**
      * Resolves the value at the specified index to a boolean.
      *
-     * @param  index
-     *         The index to resolve
-     * @param  defaultValue
-     *         Alternative value to use when the value associated with the index is null
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index        The index to resolve
+     * @param defaultValue Alternative value to use when the value associated with the index is null
      * @return True, if the value is present and set to true. False, if it is set to false. Otherwise defaultValue.
+     * @throws ParsingException If the value is of the wrong type
      */
-    public boolean getBoolean(int index, boolean defaultValue)
-    {
+    public boolean getBoolean(int index, boolean defaultValue) {
         Boolean value = get(Boolean.class, index, Boolean::parseBoolean, null);
         return value == null ? defaultValue : value;
     }
@@ -338,16 +266,11 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to an int.
      *
-     * @param  index
-     *         The index to resolve
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index The index to resolve
      * @return The resolved int value
+     * @throws ParsingException If the value is of the wrong type
      */
-    public int getInt(int index)
-    {
+    public int getInt(int index) {
         Integer value = get(Integer.class, index, Integer::parseInt, Number::intValue);
         if (value == null)
             throw valueError(index, "int");
@@ -357,18 +280,12 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to an int.
      *
-     * @param  index
-     *         The index to resolve
-     * @param  defaultValue
-     *         Alternative value to use when the value associated with the index is null
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index        The index to resolve
+     * @param defaultValue Alternative value to use when the value associated with the index is null
      * @return The resolved int value
+     * @throws ParsingException If the value is of the wrong type
      */
-    public int getInt(int index, int defaultValue)
-    {
+    public int getInt(int index, int defaultValue) {
         Integer value = get(Integer.class, index, Integer::parseInt, Number::intValue);
         return value == null ? defaultValue : value;
     }
@@ -376,16 +293,11 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to an unsigned int.
      *
-     * @param  index
-     *         The index to resolve
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index The index to resolve
      * @return The resolved unsigned int value
+     * @throws ParsingException If the value is of the wrong type
      */
-    public int getUnsignedInt(int index)
-    {
+    public int getUnsignedInt(int index) {
         Integer value = get(Integer.class, index, Integer::parseUnsignedInt, Number::intValue);
         if (value == null)
             throw valueError(index, "unsigned int");
@@ -395,18 +307,12 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to an unsigned int.
      *
-     * @param  index
-     *         The index to resolve
-     * @param  defaultValue
-     *         Alternative value to use when the value associated with the index is null
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index        The index to resolve
+     * @param defaultValue Alternative value to use when the value associated with the index is null
      * @return The resolved unsigned int value
+     * @throws ParsingException If the value is of the wrong type
      */
-    public int getUnsignedInt(int index, int defaultValue)
-    {
+    public int getUnsignedInt(int index, int defaultValue) {
         Integer value = get(Integer.class, index, Integer::parseUnsignedInt, Number::intValue);
         return value == null ? defaultValue : value;
     }
@@ -414,16 +320,11 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to a long.
      *
-     * @param  index
-     *         The index to resolve
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index The index to resolve
      * @return The resolved long value
+     * @throws ParsingException If the value is of the wrong type
      */
-    public long getLong(int index)
-    {
+    public long getLong(int index) {
         Long value = get(Long.class, index, Long::parseLong, Number::longValue);
         if (value == null)
             throw valueError(index, "long");
@@ -433,18 +334,12 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to a long.
      *
-     * @param  index
-     *         The index to resolve
-     * @param  defaultValue
-     *         Alternative value to use when the value associated with the index is null
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index        The index to resolve
+     * @param defaultValue Alternative value to use when the value associated with the index is null
      * @return The resolved long value
+     * @throws ParsingException If the value is of the wrong type
      */
-    public long getLong(int index, long defaultValue)
-    {
+    public long getLong(int index, long defaultValue) {
         Long value = get(Long.class, index, Long::parseLong, Number::longValue);
         return value == null ? defaultValue : value;
     }
@@ -452,16 +347,11 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to an unsigned long.
      *
-     * @param  index
-     *         The index to resolve
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index The index to resolve
      * @return The resolved unsigned long value
+     * @throws ParsingException If the value is of the wrong type
      */
-    public long getUnsignedLong(int index)
-    {
+    public long getUnsignedLong(int index) {
         Long value = get(Long.class, index, Long::parseUnsignedLong, Number::longValue);
         if (value == null)
             throw valueError(index, "unsigned long");
@@ -471,18 +361,12 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Resolves the value at the specified index to an unsigned long.
      *
-     * @param  index
-     *         The index to resolve
-     * @param  defaultValue
-     *         Alternative value to use when the value associated with the index is null
-     *
-     * @throws ParsingException
-     *         If the value is of the wrong type
-     *
+     * @param index        The index to resolve
+     * @param defaultValue Alternative value to use when the value associated with the index is null
      * @return The resolved unsigned long value
+     * @throws ParsingException If the value is of the wrong type
      */
-    public long getUnsignedLong(int index, long defaultValue)
-    {
+    public long getUnsignedLong(int index, long defaultValue) {
         Long value = get(Long.class, index, Long::parseUnsignedLong, Number::longValue);
         return value == null ? defaultValue : value;
     }
@@ -490,14 +374,11 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Appends the provided value to the end of the array.
      *
-     * @param  value
-     *         The value to append
-     *
+     * @param value The value to append
      * @return A JSONArray with the value inserted at the end
      */
     @NotNull
-    public JSONArray add(@Nullable Object value)
-    {
+    public JSONArray add(@Nullable Object value) {
         if (value instanceof SerializableData)
             data.add(((SerializableData) value).toData().data);
         else if (value instanceof SerializableArray)
@@ -510,14 +391,11 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Appends the provided values to the end of the array.
      *
-     * @param  values
-     *         The values to append
-     *
+     * @param values The values to append
      * @return A JSONArray with the values inserted at the end
      */
     @NotNull
-    public JSONArray addAll(@NotNull Collection<?> values)
-    {
+    public JSONArray addAll(@NotNull Collection<?> values) {
         values.forEach(this::add);
         return this;
     }
@@ -525,30 +403,23 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Appends the provided values to the end of the array.
      *
-     * @param  array
-     *         The values to append
-     *
+     * @param array The values to append
      * @return A JSONArray with the values inserted at the end
      */
     @NotNull
-    public JSONArray addAll(@NotNull JSONArray array)
-    {
+    public JSONArray addAll(@NotNull JSONArray array) {
         return addAll(array.data);
     }
 
     /**
      * Inserts the specified value at the provided index.
      *
-     * @param  index
-     *         The target index
-     * @param  value
-     *         The value to insert
-     *
+     * @param index The target index
+     * @param value The value to insert
      * @return A JSONArray with the value inserted at the specified index
      */
     @NotNull
-    public JSONArray insert(int index, @Nullable Object value)
-    {
+    public JSONArray insert(int index, @Nullable Object value) {
         if (value instanceof SerializableData)
             data.add(index, ((SerializableData) value).toData().data);
         else if (value instanceof SerializableArray)
@@ -561,14 +432,11 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Removes the value at the specified index.
      *
-     * @param  index
-     *         The target index to remove
-     *
+     * @param index The target index to remove
      * @return A JSONArray with the value removed
      */
     @NotNull
-    public JSONArray remove(int index)
-    {
+    public JSONArray remove(int index) {
         data.remove(index);
         return this;
     }
@@ -576,14 +444,11 @@ public class JSONArray implements Iterable<Object>, SerializableArray
     /**
      * Removes the specified value.
      *
-     * @param  value
-     *         The value to remove
-     *
+     * @param value The value to remove
      * @return A JSONArray with the value removed
      */
     @NotNull
-    public JSONArray remove(@Nullable Object value)
-    {
+    public JSONArray remove(@Nullable Object value) {
         data.remove(value);
         return this;
     }
@@ -594,45 +459,33 @@ public class JSONArray implements Iterable<Object>, SerializableArray
      * @return byte array containing the JSON representation of this object
      */
     @NotNull
-    public byte[] toJson()
-    {
-        try
-        {
+    public byte[] toJson() {
+        try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             mapper.writeValue(outputStream, data);
             return outputStream.toByteArray();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     @Override
-    public String toString()
-    {
-        try
-        {
+    public String toString() {
+        try {
             return mapper.writeValueAsString(data);
-        }
-        catch (JsonProcessingException e)
-        {
+        } catch (JsonProcessingException e) {
             throw new ParsingException(e);
         }
     }
 
     @NotNull
-    public String toPrettyString()
-    {
+    public String toPrettyString() {
         DefaultPrettyPrinter.Indenter indent = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
         DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
         printer.withObjectIndenter(indent).withArrayIndenter(indent);
-        try
-        {
+        try {
             return mapper.writer(printer).writeValueAsString(data);
-        }
-        catch (JsonProcessingException e)
-        {
+        } catch (JsonProcessingException e) {
             throw new ParsingException(e);
         }
     }
@@ -643,25 +496,21 @@ public class JSONArray implements Iterable<Object>, SerializableArray
      * @return The resulting list
      */
     @NotNull
-    public List<Object> toList()
-    {
+    public List<Object> toList() {
         return data;
     }
 
-    private ParsingException valueError(int index, String expectedType)
-    {
+    private ParsingException valueError(int index, String expectedType) {
         return new ParsingException("Unable to resolve value at " + index + " to type " + expectedType + ": " + data.get(index));
     }
 
     @Nullable
-    private <T> T get(@NotNull Class<T> type, int index)
-    {
+    private <T> T get(@NotNull Class<T> type, int index) {
         return get(type, index, null, null);
     }
 
     @Nullable
-    private <T> T get(@NotNull Class<T> type, int index, @Nullable Function<String, T> stringMapper, @Nullable Function<Number, T> numberMapper)
-    {
+    private <T> T get(@NotNull Class<T> type, int index, @Nullable Function<String, T> stringMapper, @Nullable Function<Number, T> numberMapper) {
         Object value = data.get(index);
         if (value == null)
             return null;
@@ -681,24 +530,21 @@ public class JSONArray implements Iterable<Object>, SerializableArray
 
     @NotNull
     @Override
-    public Iterator<Object> iterator()
-    {
+    public Iterator<Object> iterator() {
         synchronized (data) {
             return data.iterator();
         }
     }
 
     @NotNull
-    public <T> Stream<T> stream(BiFunction<? super JSONArray, Integer, ? extends T> mapper)
-    {
+    public <T> Stream<T> stream(BiFunction<? super JSONArray, Integer, ? extends T> mapper) {
         return IntStream.range(0, length())
                 .mapToObj(index -> mapper.apply(this, index));
     }
 
     @NotNull
     @Override
-    public JSONArray toJSONArray()
-    {
+    public JSONArray toJSONArray() {
         return this;
     }
 }
