@@ -89,11 +89,7 @@ public class JSONArray implements Iterable<Object>, SerializableArray {
      */
     @NotNull
     public static JSONArray fromJson(@NotNull String json) {
-        try {
-            return new JSONArray(mapper.readValue(json, listType));
-        } catch (IOException e) {
-            throw new ParsingException(e);
-        }
+        return new JSONArray(json);
     }
 
     /**
@@ -106,7 +102,7 @@ public class JSONArray implements Iterable<Object>, SerializableArray {
     @NotNull
     public static JSONArray fromJson(@NotNull InputStream json) {
         try {
-            return new JSONArray(mapper.readValue(json, listType));
+            return new JSONArray((List<Object>) mapper.readValue(json, listType));
         } catch (IOException e) {
             throw new ParsingException(e);
         }
@@ -122,7 +118,7 @@ public class JSONArray implements Iterable<Object>, SerializableArray {
     @NotNull
     public static JSONArray fromJson(@NotNull Reader json) {
         try {
-            return new JSONArray(mapper.readValue(json, listType));
+            return new JSONArray((List<Object>) mapper.readValue(json, listType));
         } catch (IOException e) {
             throw new ParsingException(e);
         }
