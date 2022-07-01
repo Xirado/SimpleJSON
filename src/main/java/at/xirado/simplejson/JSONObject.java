@@ -50,18 +50,18 @@ public class JSONObject implements SerializableData {
         this.data = new ConcurrentHashMap<>(data);
     }
 
-    protected JSONObject(@NotNull String json) {
+    protected JSONObject(@NotNull String data, @NotNull FileType fileType) {
         try {
-            Map<String, Object> map = mapper.readValue(json, mapType);
+            Map<String, Object> map = getMapper(fileType).readValue(data, mapType);
             this.data = new ConcurrentHashMap<>(map);
         } catch (IOException ex) {
             throw new ParsingException(ex);
         }
     }
 
-    protected JSONObject(@NotNull InputStream stream) {
+    protected JSONObject(@NotNull InputStream stream, @NotNull FileType fileType) {
         try {
-            Map<String, Object> map = mapper.readValue(stream, mapType);
+            Map<String, Object> map = getMapper(fileType).readValue(stream, mapType);
             this.data = new ConcurrentHashMap<>(map);
         } catch (IOException ex) {
             throw new ParsingException(ex);
@@ -122,7 +122,7 @@ public class JSONObject implements SerializableData {
      */
     @NotNull
     public static JSONObject fromJson(@NotNull String json) {
-        return new JSONObject(json);
+        return new JSONObject(json, FileType.JSON);
     }
 
     /**
@@ -134,7 +134,7 @@ public class JSONObject implements SerializableData {
      */
     @NotNull
     public static JSONObject fromJson(@NotNull InputStream stream) {
-        return new JSONObject(stream);
+        return new JSONObject(stream, FileType.JSON);
     }
 
     /**
@@ -604,5 +604,16 @@ public class JSONObject implements SerializableData {
 
         throw new ParsingException(String.format(Locale.ROOT, "Cannot parse value for %s into type %s: %s instance of %s",
                 key, type.getSimpleName(), value, value.getClass().getSimpleName()));
+    }
+
+    private ObjectMapper getMapper(FileType fileType) {
+        switch(fileType) {
+            case JSON:
+                return mapper;
+            case YAML:
+                return ymlMapper;
+            default:
+                throw new IllegalArgumentException("Unsupported Type");
+        }
     }
 }
