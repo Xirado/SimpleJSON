@@ -57,6 +57,14 @@ public class JSONArray implements Iterable<Object>, SerializableArray {
         }
     }
 
+    protected JSONArray(InputStream stream) {
+        try {
+            this.data = mapper.readValue(stream, listType);
+        } catch (IOException e) {
+            throw new ParsingException(e);
+        }
+    }
+
     /**
      * Creates a new empty JSONArray, ready to be populated with values.
      *
@@ -101,11 +109,7 @@ public class JSONArray implements Iterable<Object>, SerializableArray {
      */
     @NotNull
     public static JSONArray fromJson(@NotNull InputStream json) {
-        try {
-            return new JSONArray((List<Object>) mapper.readValue(json, listType));
-        } catch (IOException e) {
-            throw new ParsingException(e);
-        }
+        return new JSONArray(json);
     }
 
     /**

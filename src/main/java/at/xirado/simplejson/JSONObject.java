@@ -56,6 +56,15 @@ public class JSONObject implements SerializableData {
         }
     }
 
+    protected JSONObject(@NotNull InputStream stream) {
+        try {
+            Map<String, Object> map = mapper.readValue(stream, mapType);
+            this.data = new ConcurrentHashMap<>(map);
+        } catch (IOException ex) {
+            throw new ParsingException(ex);
+        }
+    }
+
     /**
      * Creates a new empty JSONObject, ready to be populated with values.
      *
@@ -93,12 +102,7 @@ public class JSONObject implements SerializableData {
      */
     @NotNull
     public static JSONObject fromJson(@NotNull String json) {
-        try {
-            Map<String, Object> map = mapper.readValue(json, mapType);
-            return new JSONObject(map);
-        } catch (IOException ex) {
-            throw new ParsingException(ex);
-        }
+        return new JSONObject(json);
     }
 
     /**
@@ -110,12 +114,7 @@ public class JSONObject implements SerializableData {
      */
     @NotNull
     public static JSONObject fromJson(@NotNull InputStream stream) {
-        try {
-            Map<String, Object> map = mapper.readValue(stream, mapType);
-            return new JSONObject(map);
-        } catch (IOException ex) {
-            throw new ParsingException(ex);
-        }
+        return new JSONObject(stream);
     }
 
     /**
