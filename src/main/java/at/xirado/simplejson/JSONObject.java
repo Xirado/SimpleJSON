@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.MapType;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,11 +30,13 @@ import java.util.function.UnaryOperator;
 public class JSONObject implements SerializableData {
     private static final Logger log = LoggerFactory.getLogger(JSONObject.class);
     private static final ObjectMapper mapper;
+    private static final ObjectMapper ymlMapper;
     private static final SimpleModule module;
     private static final MapType mapType;
 
     static {
         mapper = new ObjectMapper();
+        ymlMapper = new ObjectMapper(new YAMLFactory());
         module = new SimpleModule();
         module.addAbstractTypeMapping(Map.class, ConcurrentHashMap.class);
         module.addAbstractTypeMapping(List.class, ArrayList.class);
@@ -47,9 +50,9 @@ public class JSONObject implements SerializableData {
         this.data = new ConcurrentHashMap<>(data);
     }
 
-    protected JSONObject(@NotNull String data) {
+    protected JSONObject(@NotNull String json) {
         try {
-            Map<String, Object> map = mapper.readValue(data, mapType);
+            Map<String, Object> map = mapper.readValue(json, mapType);
             this.data = new ConcurrentHashMap<>(map);
         } catch (IOException ex) {
             throw new ParsingException(ex);
@@ -87,6 +90,23 @@ public class JSONObject implements SerializableData {
     public static JSONObject fromJson(@NotNull byte[] data) {
         try {
             Map<String, Object> map = mapper.readValue(data, mapType);
+            return new JSONObject(map);
+        } catch (IOException ex) {
+            throw new ParsingException(ex);
+        }
+    }
+
+    /**
+     * Parses a YAML payload into a JSONObject instance.
+     *
+     * @param yml The correctly formatted YAML payload to parse
+     * @return A JSONObject instance for the provided payload
+     * @throws ParsingException If the provided yaml is incorrectly formatted
+     */
+    @NotNull
+    public static JSONObject fromYaml(@NotNull String yml) {
+        try {
+            Map<String, Object> map = ymlMapper.readValue(yml, mapType);
             return new JSONObject(map);
         } catch (IOException ex) {
             throw new ParsingException(ex);
