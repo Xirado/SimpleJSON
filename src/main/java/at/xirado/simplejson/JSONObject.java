@@ -68,6 +68,10 @@ public class JSONObject implements SerializableData {
         }
     }
 
+    protected JSONObject(@NotNull JSONObject object) {
+        this.data = object.data;
+    }
+
     /**
      * Creates a new empty JSONObject, ready to be populated with values.
      *
