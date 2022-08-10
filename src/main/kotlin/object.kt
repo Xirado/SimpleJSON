@@ -1,14 +1,16 @@
 import at.xirado.simplejson.JSONArray
 import at.xirado.simplejson.JSONObject
 
-@Suppress("UNCHECKED_CAST")
-inline fun <reified T> JSONArray.asSequence(): Sequence<T> = when (T::class) {
-    String::class -> IntRange(0, length() - 1).map { getString(it) }.asSequence() as Sequence<T>
-    Int::class -> IntRange(0, length() - 1).map { getInt(it) }.asSequence() as Sequence<T>
-    Long::class -> IntRange(0, length() - 1).map { getLong(it) }.asSequence() as Sequence<T>
-    Double::class -> IntRange(0, length() - 1).map { getDouble(it) }.asSequence() as Sequence<T>
-    Boolean::class -> IntRange(0, length() - 1).map { getBoolean(it) }.asSequence() as Sequence<T>
-    JSONObject::class -> IntRange(0, length() - 1).map { getObject(it) }.asSequence() as Sequence<T>
-    JSONArray::class -> IntRange(0, length() - 1).map { getObject(it) }.asSequence() as Sequence<T>
-    else -> throw IllegalArgumentException("Cannot get sequence of that type!")
+inline fun <reified T> JSONArray.collect() = IntRange(0, length() - 1).map { get<T>(it) }
+
+inline fun <reified T> JSONArray.get(index: Int) = when (T::class) {
+    String::class -> getString(index) as T
+    Int::class -> getInt(index) as T
+    Long::class -> getLong(index) as T
+    Double::class -> getDouble(index) as T
+    Float::class -> getDouble(index) as T
+    Boolean::class -> getBoolean(index) as T
+    JSONObject::class -> getObject(index) as T
+    JSONArray::class -> getArray(index) as T
+    else -> throw IllegalArgumentException("Cannot get object of type ${T::class.simpleName}")
 }
