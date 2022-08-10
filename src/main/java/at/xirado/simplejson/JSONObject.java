@@ -46,11 +46,11 @@ public class JSONObject implements SerializableData {
 
     protected final Map<String, Object> data;
 
-    protected JSONObject(@NotNull Map<String, Object> data) {
+    public JSONObject(@NotNull Map<String, Object> data) {
         this.data = new ConcurrentHashMap<>(data);
     }
 
-    protected JSONObject(@NotNull String data, @NotNull FileType fileType) {
+    public JSONObject(@NotNull String data, @NotNull FileType fileType) {
         try {
             Map<String, Object> map = getMapper(fileType).readValue(data, mapType);
             this.data = new ConcurrentHashMap<>(map);
@@ -59,7 +59,7 @@ public class JSONObject implements SerializableData {
         }
     }
 
-    protected JSONObject(@NotNull InputStream stream, @NotNull FileType fileType) {
+    public JSONObject(@NotNull InputStream stream, @NotNull FileType fileType) {
         try {
             Map<String, Object> map = getMapper(fileType).readValue(stream, mapType);
             this.data = new ConcurrentHashMap<>(map);
@@ -68,7 +68,7 @@ public class JSONObject implements SerializableData {
         }
     }
 
-    protected JSONObject(@NotNull JSONObject object) {
+    public JSONObject(@NotNull JSONObject object) {
         this.data = object.data;
     }
 
@@ -111,6 +111,23 @@ public class JSONObject implements SerializableData {
     public static JSONObject fromYaml(@NotNull String yml) {
         try {
             Map<String, Object> map = ymlMapper.readValue(yml, mapType);
+            return new JSONObject(map);
+        } catch (IOException ex) {
+            throw new ParsingException(ex);
+        }
+    }
+
+    /**
+     * Parses a YAML payload into a JSONObject instance.
+     *
+     * @param inputStream The correctly formatted YAML payload to parse
+     * @return A JSONObject instance for the provided payload
+     * @throws ParsingException If the provided yaml is incorrectly formatted
+     */
+    @NotNull
+    public static JSONObject fromYaml(@NotNull InputStream inputStream) {
+        try {
+            Map<String, Object> map = ymlMapper.readValue(inputStream, mapType);
             return new JSONObject(map);
         } catch (IOException ex) {
             throw new ParsingException(ex);
