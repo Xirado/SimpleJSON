@@ -1,7 +1,8 @@
-import at.xirado.simplejson.JSONArray
-import at.xirado.simplejson.JSONObject
+package at.xirado.simplejson
 
-inline fun <reified T> JSONArray.collect() = IntRange(0, length() - 1).map { get<T>(it) }
+inline fun <reified T> JSONArray.collect() = (0 until length()).map { get<T>(it) }
+
+inline fun <reified T> JSONArray.asSequence() = (0 until length()).asSequence().map { get<T>(it) }
 
 inline fun <reified T> JSONArray.get(index: Int) = when (T::class) {
     String::class -> getString(index) as T
