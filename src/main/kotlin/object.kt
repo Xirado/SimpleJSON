@@ -8,7 +8,7 @@ inline fun <reified T> JSONArray.get(index: Int) = when (T::class) {
     Int::class -> getInt(index) as T
     Long::class -> getLong(index) as T
     Double::class -> getDouble(index) as T
-    Float::class -> getDouble(index) as T
+    Float::class -> getDouble(index).toFloat() as T
     Boolean::class -> getBoolean(index) as T
     JSONObject::class -> getObject(index) as T
     JSONArray::class -> getArray(index) as T
