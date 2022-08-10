@@ -291,6 +291,33 @@ public class JSONArray implements Iterable<Object>, SerializableArray {
     }
 
     /**
+     * Resolves the value at the specified index to a double.
+     *
+     * @param index The index to resolve
+     * @return The resolved double value
+     * @throws ParsingException If the value is of the wrong type
+     */
+    public double getDouble(int index) {
+        Double value = get(Double.class, index, Double::parseDouble, Number::doubleValue);
+        if (value == null)
+            throw valueError(index, "double");
+        return value;
+    }
+
+    /**
+     * Resolves the value at the specified index to a double.
+     *
+     * @param index        The index to resolve
+     * @param defaultValue Alternative value to use when the value associated with the index is null
+     * @return The resolved double value
+     * @throws ParsingException If the value is of the wrong type
+     */
+    public double getDouble(int index, double defaultValue) {
+        Double value = get(Double.class, index, Double::parseDouble, Number::doubleValue);
+        return value == null ? defaultValue : value;
+    }
+
+    /**
      * Resolves the value at the specified index to an unsigned int.
      *
      * @param index The index to resolve
