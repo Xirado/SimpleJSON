@@ -19,6 +19,12 @@ dependencies {
     api("org.slf4j:slf4j-api:1.7.36")
 
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib")
+
+    testImplementation(kotlin("test"))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 publishing {

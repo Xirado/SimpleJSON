@@ -11,3 +11,8 @@ inline fun <reified T> JSONObject.get(key: String) = when (T::class) {
     JSONArray::class -> getArray(key) as T
     else -> throw IllegalArgumentException("Cannot get object of type ${T::class.simpleName}")
 }
+
+inline fun json(block: InlineJsonObject.() -> Unit) = InlineJsonObject(JSONObject.empty()).apply(block).toData()
+
+
+
