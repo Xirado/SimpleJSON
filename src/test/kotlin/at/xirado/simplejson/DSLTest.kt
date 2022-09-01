@@ -7,7 +7,7 @@ internal class DSLTest {
     fun testDSL() {
         val json = json {
             "someKey" by "someValue"
-            "someObject" by json {
+            "someObject" by {
                 "someKey" by 14
                 "someOtherKey" by "someOtherValue"
             }
