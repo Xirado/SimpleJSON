@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -38,7 +37,7 @@ public class JSONObject implements SerializableData {
         mapper = new ObjectMapper();
         ymlMapper = new ObjectMapper(new YAMLFactory());
         module = new SimpleModule();
-        module.addAbstractTypeMapping(Map.class, ConcurrentHashMap.class);
+        module.addAbstractTypeMapping(Map.class, HashMap.class);
         module.addAbstractTypeMapping(List.class, ArrayList.class);
         mapper.registerModule(module);
         mapType = mapper.getTypeFactory().constructRawMapType(HashMap.class);
@@ -47,13 +46,13 @@ public class JSONObject implements SerializableData {
     protected final Map<String, Object> data;
 
     public JSONObject(@NotNull Map<String, Object> data) {
-        this.data = new ConcurrentHashMap<>(data);
+        this.data = Collections.synchronizedMap(data);
     }
 
     public JSONObject(@NotNull String data, @NotNull FileType fileType) {
         try {
             Map<String, Object> map = getMapper(fileType).readValue(data, mapType);
-            this.data = new ConcurrentHashMap<>(map);
+            this.data = Collections.synchronizedMap(map);
         } catch (IOException ex) {
             throw new ParsingException(ex);
         }
@@ -62,7 +61,7 @@ public class JSONObject implements SerializableData {
     public JSONObject(@NotNull InputStream stream, @NotNull FileType fileType) {
         try {
             Map<String, Object> map = getMapper(fileType).readValue(stream, mapType);
-            this.data = new ConcurrentHashMap<>(map);
+            this.data = Collections.synchronizedMap(map);
         } catch (IOException ex) {
             throw new ParsingException(ex);
         }
