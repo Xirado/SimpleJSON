@@ -32,7 +32,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "at.xirado"
             artifactId = "simplejson"
-            version = "1.0-SNAPSHOT"
+            version = project.version.toString()
 
             from(components["java"])
         }
