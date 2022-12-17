@@ -7,4 +7,6 @@ class InlineJsonObject(private val json: JSONObject) : SerializableData {
         json.put(this, InlineJsonObject(JSONObject.empty()).apply(builder))
 
     override fun toData() = json
+
+    override fun toString() = json.toString()
 }
